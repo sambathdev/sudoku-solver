@@ -21,6 +21,7 @@ public class ThreeByThree {
         while(!isFinish) {
             generateNote(board, note);
             boolean isSingleValue = false;
+            boolean isUniqueValue = false;
             for (int i = 0; i < 9; ++i) {
                 for (int j = 0; j < 9; ++j) {
                     if (!note[i][j].isBlank() && !note[i][j].contains("-")) {
@@ -33,22 +34,143 @@ public class ThreeByThree {
             generateNote(board, note);
             if (!isSingleValue) {
                 for (int i = 0; i < 9; ++i) {
-                    // loop through row and column
-                    String noteRow = note[i][0] + "-" + note[i][1] + "-" + note[i][2] + "-" + note[i][3] + "-" + note[i][4] + "-" + note[i][5] + "-" + note[i][6] + "-" + note[i][7] + "-" + note[i][8];
-                    String noteCol = note[0][i] + "-" + note[1][i] + "-" + note[2][i] + "-" + note[3][i] + "-" + note[4][i] + "-" + note[5][i] + "-" + note[6][i] + "-" + note[7][i] + "-" + note[8][i];
+                    generateNote(board, note);
+                    String noteRow = note[i][0] + "," + note[i][1] + "," + note[i][2] + "," + note[i][3] + "," + note[i][4] + "," + note[i][5] + "," + note[i][6] + "," + note[i][7] + "," + note[i][8];
+                    for (int j = 0; j < 9; ++j) {
+                        generateNote(board, note);
+                        String noteCol = note[0][j] + "," + note[1][j] + "," + note[2][j] + "," + note[3][j] + "," + note[4][j] + "," + note[5][j] + "," + note[6][j] + "," + note[7][j] + "," + note[8][j];
+                        int[] blockAxis = getBlockAxis(i, j);
+                        int x = blockAxis[0];
+                        int y = blockAxis[1];
+                        String noteBlock = note[x][y] + "," + note[x][y + 1] + "," + note[x][y + 2] + "," + note[x + 1][y] + "," + note[x + 1][y + 1] + "," + note[x + 1][y + 2] + "," + note[x + 2][y] + "," + note[x + 2][y + 1] + "," + note[x + 2][y + 2];
+                        // now we have [ noteRow, noteCol, noteBlock] which contain all possible numbers
+                        // check uniqueness of each type (row col and block)
+//                        System.out.println(noteBlock);
+
+                        // TODO check col here but check the case if the i is 0 (on one iteration)
+                        if (i == 0) {
+                            int indexCol = 0;
+                            for(int k = 0; k < noteCol.length(); ++k) {
+                                char ch = noteCol.charAt(k);
+                                if (ch == ',') ++indexCol;
+                                if (isUniqueInString(noteCol, ch)) {
+                                    board[indexCol][j] = Character.getNumericValue(ch);
+                                    isUniqueValue = true;
+                                }
+                            }
+                        }
+                        // TODO check block here but check the case if x % 3 == 0 && y % 3 == 0
+                        if (x % 3 == 0 && y % 3 == 0) {
+                            // 0 3 6
+                            int indexBlock = 0;
+                            for(int k = 0; k < noteBlock.length(); ++k) {
+                                char ch = noteBlock.charAt(k);
+                                if (ch == ',') ++indexBlock;
+                                if (isUniqueInString(noteBlock, ch)) {
+                                    // where am i at block ?
+                                    int subRow = indexBlock < 3 ? 0 : indexBlock < 6?1:2;
+                                    int subCol = indexBlock % 3;
+                                    if (x == 0 && y == 0) {
+                                        //block 1
+                                        board[subRow][subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                    if (x == 0 && y == 3) {
+                                        //block 2
+                                        board[subRow][3 + subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                    if (x == 0 && y == 6) {
+                                        //block 3
+                                        board[subRow][6 + subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+
+                                    if (x == 3 && y == 0) {
+                                        //block 4
+                                        board[3 + subRow][subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                    if (x == 3 && y == 3) {
+                                        //block 5
+                                        board[3+ subRow][3 + subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                    if (x == 3 && y == 6) {
+                                        //block 6
+                                        board[3+ subRow][6 + subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+
+                                    if (x == 6 && y == 0) {
+                                        //block 7
+                                        board[6 + subRow][subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                    if (x == 6 && y == 3) {
+                                        //block 8
+                                        board[6 + subRow][3 + subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                    if (x == 6 && y == 6) {
+                                        //block 9
+                                        board[6 + subRow][6 + subCol] = Character.getNumericValue(ch);
+                                        isUniqueValue = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     System.out.println(noteRow);
+                    // TODO check row here
+                    int indexRow = 0;
+                    for(int k = 0; k < noteRow.length(); ++k) {
+                        char ch = noteRow.charAt(k);
+                        if (ch == ',') ++indexRow;
+                        if (isUniqueInString(noteRow, ch)) {
+                            board[i][indexRow] = Character.getNumericValue(ch);
+                            isUniqueValue = true;
+                        }
+                    }
+                }
+                if (!isUniqueValue) {
+                    isFinish = true;
                 }
             }
+
             // if (!isSingleValue) should check the unique of the possible numbers in the row
             // if the unique does not exist check in column
             // if the unique in column not exist check in block
 
-
-            if (!isSingleValue) isFinish = true;
         }
         generateNote(board, note);
         printBoard(board);
         printNote(note);
+    }
+
+    static boolean isUniqueInString(String string, char ch) {
+        int count = 0;
+        for (int i = 0; i < string.length(); ++i) {
+            if (string.charAt(i) == ch) {
+                ++count;
+            }
+        }
+        if (count == 1) return true;
+        return false;
+    }
+
+    static String getUniquesInString(String noteRow) {
+        String uniques = "";
+        for (int i = 0; i < noteRow.length(); ++i) {
+            boolean isUnique = true;
+            for (int j = i+1; j < noteRow.length() - 1; ++j) {
+                if (noteRow.charAt(i) == noteRow.charAt(j)) isUnique = false;
+            }
+            if (isUnique) {
+                uniques += noteRow.charAt(i);
+            }
+        }
+        return uniques;
     }
 
     static void generateNote(int[][] board, String[][] note) {
